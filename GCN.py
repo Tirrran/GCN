@@ -151,7 +151,7 @@ class GCN_2layer(nn.Module):
 num_features = 166
 num_classes = 2
 num_ts = 49
-epochs = 35
+epochs = 15
 lr = 0.001
 max_train_ts = 34
 train_ts = np.arange(max_train_ts)
