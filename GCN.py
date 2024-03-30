@@ -1,3 +1,4 @@
+# обучение
 # %% [code] {"execution":{"iopub.status.busy":"2024-03-29T08:59:23.656878Z","iopub.execute_input":"2024-03-29T08:59:23.657311Z","iopub.status.idle":"2024-03-29T08:59:23.673801Z","shell.execute_reply.started":"2024-03-29T08:59:23.657276Z","shell.execute_reply":"2024-03-29T08:59:23.672826Z"}}
 def load_data(data_dir, start_ts, end_ts):
 	classes_csv = 'elliptic_txs_classes.csv'
