@@ -12,16 +12,14 @@ def load_data(data_dir, start_ts, end_ts):
 	num_tx = features.shape[0]	
 	total_tx = list(classes.index)
 
-	# select only the transactions which are labelled
+	# выберание только тех транзакций, которые помечены
 	labelled_classes = classes[classes['class'] != 'unknown']
 	labelled_tx = list(labelled_classes.index)
-
-	# to calculate a list of adjacency matrices for the different timesteps
 
 	adj_mats = []
 	features_labelled_ts = []
 	classes_ts = []
-	num_ts = 49 # number of timestamps from the paper
+	num_ts = 49 # временные метки
 
 	for ts in range(start_ts, end_ts):
 	    features_ts = features[features[1] == ts+1]
@@ -29,8 +27,6 @@ def load_data(data_dir, start_ts, end_ts):
 	    
 	    labelled_tx_ts = [tx for tx in tx_ts if tx in set(labelled_tx)]
 	    
-	    # adjacency matrix for all the transactions
-	    # we will only fill in the transactions of this timestep which have labels and can be used for training
 	    adj_mat = pd.DataFrame(np.zeros((num_tx, num_tx)), index = total_tx, columns = total_tx)
 	    
 	    edgelist_labelled_ts = edgelist.loc[edgelist.index.intersection(labelled_tx_ts).unique()]
@@ -89,22 +85,16 @@ class GraphConv(nn.Module):
             nn.init.xavier_uniform_(self.W)
         
     def forward(self, A, H_in, H_skip_in = None):
-        # A must be an n x n matrix as it is an adjacency matrix
-        # H is the input of the node embeddings, shape will n x in_features
+
         self.A = A
         self.H_in = H_in
         A_ = torch.add(self.A, torch.eye(self.A.shape[0]).double())
         D_ = torch.diag(A_.sum(1))
-        # since D_ is a diagonal matrix, 
-        # its root will be the roots of the diagonal elements on the principle diagonal
-        # since A is an adjacency matrix, we are only dealing with positive values 
-        # all roots will be real
+
         D_root_inv = torch.inverse(torch.sqrt(D_))
         A_norm = torch.mm(torch.mm(D_root_inv, A_), D_root_inv)
-        # shape of A_norm will be n x n
         
         H_out = torch.mm(torch.mm(A_norm, H_in), self.W)
-        # shape of H_out will be n x out_features
         
         if self.skip:
             H_skip_out = torch.mm(H_skip_in, self.W_skip)
@@ -158,7 +148,7 @@ train_ts = np.arange(max_train_ts)
 
 adj_mats, features_labelled_ts, classes_ts = dataSet
 
-# 0 - illicit, 1 - licit
+# 0 - незаконные, 1 - законные
 labels_ts = []
 for c in classes_ts:
     labels_ts.append(np.array(c['class'] == '2', dtype = np.long))
@@ -167,7 +157,7 @@ gcn = GCN_2layer(num_features, 100, num_classes)
 train_loss = nn.CrossEntropyLoss(weight = torch.DoubleTensor([0.7, 0.3]))
 optimizer = torch.optim.Adam(gcn.parameters(), lr = lr)
 
-# Training
+# Обучение
 
 for ts in train_ts:
     A = torch.tensor(adj_mats[ts].values)
@@ -198,7 +188,7 @@ from sklearn.metrics import f1_score, precision_score, recall_score
 test_ts = np.arange(14)
 adj_mats, features_labelled_ts, classes_ts = load_data(dir, 35, 49)
 
-# 0 - illicit, 1 - licit
+# 0 - незаконные, 1 - законные
 labels_ts = []
 for c in classes_ts:
     labels_ts.append(np.array(c['class'] == '2', dtype = np.long))
@@ -206,7 +196,7 @@ for c in classes_ts:
 gcn = GCN_2layer(num_features, 100, num_classes)
 gcn.load_state_dict(torch.load(os.path.join("./modelDir", "gcn_weights.pth")))
 
-# Testing
+# Тест
 test_accs = []
 test_precisions = []
 test_recalls = []
