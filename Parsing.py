@@ -1,4 +1,4 @@
-# Парсинг транзакций в реальном времени (ХЭШ)
+# Парсинг транзакций хеш и txid
 
 import requests
 import time
@@ -20,7 +20,7 @@ def main():
         if unconfirmed_transactions:
             print("Транзакции:")
             for tx in unconfirmed_transactions:
-                print("Хэш транзакции:", tx['hash'])
+                print("ID транзакции (txid) Хэш транзакции:", tx['tx_index'], tx['hash'])
         else:
             print("Транзакций не обнаружено")
         time.sleep(10)
